@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/index.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/QuarkGluonPlasma/find-unused-module/issues"
   },
-  "homepage": "https://github.com/QuarkGluonPlasma/find-unused-module#readme"
+  "homepage": "https://github.com/QuarkGluonPlasma/find-unused-module#readme",
+  "dependencies": {
+    "@babel/parser": "^7.13.16",
+    "@babel/traverse": "^7.13.17"
+  }
 }
