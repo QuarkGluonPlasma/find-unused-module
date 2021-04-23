@@ -1,12 +1,12 @@
 {
     "configurations": [
         {
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/src/index.js",
+            "name": "debug",
+            "type": "node",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "type": "node",
-            "args": []
-        },
+            "runtimeExecutable": "yarn",
+            "args" : ["start"]
+          },
     ]
 }

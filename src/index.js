@@ -23,8 +23,6 @@ function moduleResolver (curModulePath, requirePath) {
         return '';
     }
 
-    
-
     return resolve(dirname(curModulePath), requirePath);
 }
 
