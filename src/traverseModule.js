@@ -11,15 +11,13 @@ const JS_EXTS = ['.js', '.jsx', '.ts', '.tsx'];
 const CSS_EXTS = ['.css', '.less', '.scss'];
 const JSON_EXTS = ['.json'];
 
+let aliasMap = {};
+
 const MODULE_TYPES = {
     JS: 1 << 0,
     CSS: 1 << 1,
     JSON: 1 << 2
 };
-
-const aliasMap = {
-    'a': './lib/ssh.js'
-}
 
 function isDirectory(filePath) {
     try {
@@ -194,4 +192,7 @@ function traverseModule (curModulePath, callback) {
     }
 }
 
-module.exports = traverseModule;
+module.exports.traverseModule = traverseModule;
+module.exports.setAliasMap = (map) => {
+    aliasMap = Object.assign(aliasMap, map);
+};

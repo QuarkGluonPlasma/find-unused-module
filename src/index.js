@@ -1,18 +1,20 @@
 const { resolve } = require('path');
 const fastGlob = require('fast-glob');
-const traverseModule = require('./traverseModule');
+const { traverseModule, setAliasMap } = require('./traverseModule');
 
 const defaultOptions = {
     cwd: '',
     entries: [],
-    includes: ['**/*', '!node_modules']
+    includes: ['**/*', '!node_modules'],
+    aliasMap: {}
 }
 
 function findUnusedModule (options) {
     let {
         cwd,
         entries,
-        includes
+        includes,
+        aliasMap
     } = Object.assign(defaultOptions, options);
 
     includes = includes.map(includePath => (cwd ? `${cwd}/${includePath}` : includePath));
@@ -21,6 +23,7 @@ function findUnusedModule (options) {
     const entryModules = [];
     const usedModules = [];
 
+    setAliasMap(aliasMap);
     entries.forEach(entry => {
         const entryPath = resolve(cwd, entry);
         entryModules.push(entryPath);

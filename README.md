@@ -1,9 +1,12 @@
-Scan unused module under the directory.
+Scan unused module under a directory.
 
 Support module require:
-- [x] es module: import
-- [x] commonjs: require 
-- [x] css、less、scss: @import
+- [x] es module import
+- [x] commonjs require 
+- [x] css、less、scss @import
+- [x] css、less、scss url()
+
+Support alias map.
 
 ## Usage
 
@@ -20,12 +23,14 @@ use findUnusedModule api:
 ```javascript
 const chalk = require('chalk');
 const findUnusedModule = require('../src/index');
-const { resolve } = require('path');
 
 const { all, used, unused } = findUnusedModule({
     cwd: process.cwd(),
     entries: ['./demo-project/fre.js', './demo-project/suzhe2.js'],
-    includes: ['./demo-project/**/*']
+    includes: ['./demo-project/**/*'],
+    aliasMap: {
+        'a': './lib/ssh.js'
+    }    
 });
 
 console.log(chalk.blue('used modules:'));
@@ -33,37 +38,42 @@ console.log(used);
 console.log(chalk.yellow('unused modules:'));
 console.log(unused);
 
+
 ```
 
 output:
 ```
 used modules:
 [
-  '/xxx/find-unused-module/demo-project/render.js',
-  '/xxx/find-unused-module/demo-project/diff.js',
-  '/xxx/find-unused-module/demo-project/dom.js',
-  '/xxx/find-unused-module/demo-project/h.js',
-  '/xxx/find-unused-module/demo-project/component.js',
-  '/xxx/find-unused-module/demo-project/set-state-queue.js',
-  '/xxx/find-unused-module/demo-project/diff.js',
-  '/xxx/find-unused-module/demo-project/dom.js',
-  '/xxx/find-unused-module/demo-project/watcher.js',
-  '/xxx/find-unused-module/demo-project/dep.js',
-  '/xxx/find-unused-module/demo-project/diff.js',
-  '/xxx/find-unused-module/demo-project/dom.js',
-  '/xxx/find-unused-module/demo-project/observer.js',
-  '/xxx/find-unused-module/demo-project/dep.js',
-  '/xxx/find-unused-module/demo-project/lib/ssh.js',
-  '/xxx/find-unused-module/demo-project/guang.tsx',
-  '/xxx/find-unused-module/demo-project/style.css',
-  '/xxx/find-unused-module/demo-project/styles/common.css',
-  '/xxx/find-unused-module/demo-project/style2.less',
-  '/xxx/find-unused-module/demo-project/styles/common2.less',
-  '/xxx/find-unused-module/demo-project/style3.scss',
-  '/xxx/find-unused-module/demo-project/styles/common3.scss'
+  '/xx/find-unused-module/demo-project/render.js',
+  '/xx/find-unused-module/demo-project/diff.js',
+  '/xx/find-unused-module/demo-project/dom.js',
+  '/xx/find-unused-module/demo-project/h.js',
+  '/xx/find-unused-module/demo-project/component.js',
+  '/xx/find-unused-module/demo-project/set-state-queue.js',
+  '/xx/find-unused-module/demo-project/diff.js',
+  '/xx/find-unused-module/demo-project/dom.js',
+  '/xx/find-unused-module/demo-project/watcher.js',
+  '/xx/find-unused-module/demo-project/dep.js',
+  '/xx/find-unused-module/demo-project/diff.js',
+  '/xx/find-unused-module/demo-project/dom.js',
+  '/xx/find-unused-module/demo-project/observer.js',
+  '/xx/find-unused-module/demo-project/dep.js',
+  '/xx/find-unused-module/demo-project/lib/ssh.js',
+  '/xx/find-unused-module/demo-project/guang.tsx',
+  '/xx/find-unused-module/demo-project/style.css',
+  '/xx/find-unused-module/demo-project/styles/common.css',
+  '/xx/find-unused-module/demo-project/style2.less',
+  '/xx/find-unused-module/demo-project/styles/common2.less',
+  '/xx/find-unused-module/demo-project/style3.scss',
+  '/xx/find-unused-module/demo-project/styles/common3.scss',
+  '/xx/find-unused-module/demo-project/styles/ssh.jpeg',
+  '/xx/find-unused-module/demo-project/styles/a.eot'
 ]
 unused modules:
-[ './demo-project/suzhe.js' ]
+[
+  '/xx/find-unused-module/./demo-project/suzhe.js'
+]
 ```
 ## Options
 
