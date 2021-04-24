@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-const findUnusedModule = require('./index');
+const findUnusedModule = require('../src/index');
 
 const { all, used, unused } = findUnusedModule({
     entries: ['./demo-project/fre.js', './demo-project/suzhe2.js'],

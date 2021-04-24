@@ -4,7 +4,7 @@ scan unused module under xxx dir, support js、ts、jsx、tsx、css、less、scs
 ```
 yarn
 
-yarn start
+yarn test
 ```
 ## Demo
 
