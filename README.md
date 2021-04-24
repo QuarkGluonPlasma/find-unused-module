@@ -1,16 +1,6 @@
-scan unused module under some dir, support js、ts、jsx、tsx、css、less、scss、json extname , esm、commonjs js module and @import css module.
+Scan unused module under the directory.
 
-support extname:
-- [x] js
-- [x] jsx
-- [x] ts
-- [x] tsx
-- [x] css
-- [x] less
-- [x] scss
-- [x] json
-
-support module require:
+Support module require:
 - [x] es module: import
 - [x] commonjs: require 
 - [x] css、less、scss: @import
