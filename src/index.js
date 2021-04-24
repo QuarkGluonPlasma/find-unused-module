@@ -27,7 +27,8 @@ function moduleResolver (curModulePath, requirePath) {
         return '';
     }
 
-    return resolve(dirname(curModulePath), requirePath);
+    curModulePath = resolve(dirname(curModulePath), requirePath);
+    return completeModulePath(curModulePath);
 }
 
 function completeModulePath (modulePath) {
