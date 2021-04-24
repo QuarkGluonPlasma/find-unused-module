@@ -2,7 +2,6 @@ const parser = require('@babel/parser');
 const traverse = require('@babel/traverse').default;
 const fs = require('fs');
 const { resolve, dirname, join, extname } = require('path');
-const fastGlob = require('fast-glob');
 const chalk = require('chalk');
 const postcss = require('postcss');
 const postcssLess = require('postcss-less');
@@ -10,10 +9,12 @@ const postcssScss = require('postcss-scss');
 
 const JS_EXTS = ['.js', '.jsx', '.ts', '.tsx'];
 const CSS_EXTS = ['.css', '.less', '.scss'];
+const JSON_EXTS = ['.json'];
 
 const MODULE_TYPES = {
     JS: 1 << 0,
-    CSS: 1 << 1
+    CSS: 1 << 1,
+    JSON: 1 << 2
 };
 
 const aliasMap = {
@@ -41,13 +42,14 @@ function moduleResolver (curModulePath, requirePath) {
 }
 
 function completeModulePath (modulePath) {
-    if (getModuleType(modulePath) & MODULE_TYPES.CSS) {
+    const EXTS = [...JSON_EXTS, ...JS_EXTS];
+    if (modulePath.match(/\.[a-zA-Z]+$/)) {
         return modulePath;
     }
 
     function tryCompletePath (resolvePath) {
-        for (let i = 0; i < JS_EXTS.length; i ++) {
-            let tryPath = resolvePath(JS_EXTS[i]);
+        for (let i = 0; i < EXTS.length; i ++) {
+            let tryPath = resolvePath(EXTS[i]);
             if (fs.existsSync(tryPath)) {
                 return tryPath;
             }
@@ -65,7 +67,7 @@ function completeModulePath (modulePath) {
         } else {
             return tryModulePath;
         }
-    } else if (!JS_EXTS.some(ext => modulePath.endsWith(ext))) {
+    } else if (!EXTS.some(ext => modulePath.endsWith(ext))) {
         const tryModulePath = tryCompletePath((ext) => modulePath + ext);
         if (!tryModulePath) {
             reportModuleNotFoundError(modulePath);
@@ -115,6 +117,8 @@ function getModuleType(modulePath) {
          return MODULE_TYPES.JS;
      } else if (CSS_EXTS.some(ext => ext === moduleExt)) {
          return MODULE_TYPES.CSS;
+     } else if (JSON_EXTS.some(ext => ext === moduleExt)) {
+         return MODULE_TYPES.JSON;
      }
 }
 
@@ -155,6 +159,16 @@ function traverseJsModule(curModulePath, callback) {
             }
             callback && callback(subModulePath);
             traverseModule(subModulePath, callback);
+        },
+        CallExpression(path) {
+            if (path.get('callee').toString() === 'require') {
+                const subModulePath = moduleResolver(curModulePath, path.get('arguments.0').toString().replace(/['"]/g, ''));
+                if (!subModulePath) {
+                    return;
+                }
+                callback && callback(subModulePath);
+                traverseModule(subModulePath, callback);
+            }
         }
     })
 }
@@ -168,9 +182,7 @@ function traverseModule (curModulePath, callback) {
         traverseJsModule(curModulePath, callback);
     } else if (moduleType & MODULE_TYPES.CSS) {
         traverseCssModule(curModulePath, callback);
-    } else {
-        throw chalk.red(`unsupport module type:  ${curModulePath}, only support js and css module`);
-    }    
+    }
 }
 
 module.exports = traverseModule;

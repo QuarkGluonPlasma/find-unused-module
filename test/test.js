@@ -1,6 +1,5 @@
 const chalk = require('chalk');
 const findUnusedModule = require('../src/index');
-const { resolve } = require('path');
 
 const { all, used, unused } = findUnusedModule({
     cwd: process.cwd(),

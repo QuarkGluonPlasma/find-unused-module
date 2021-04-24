@@ -6,7 +6,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "runtimeExecutable": "yarn",
-            "args" : ["start"]
+            "args" : ["test"]
           },
     ]
 }
