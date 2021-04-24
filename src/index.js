@@ -3,22 +3,26 @@ const fastGlob = require('fast-glob');
 const traverseModule = require('./traverseModule');
 
 const defaultOptions = {
+    cwd: '',
     entries: [],
-    includes: ['**/*']
+    includes: ['**/*', '!node_modules']
 }
 
 function findUnusedModule (options) {
-    const {
+    let {
+        cwd,
         entries,
         includes
     } = Object.assign(defaultOptions, options);
+
+    includes = includes.map(includePath => (cwd ? `${cwd}/${includePath}` : includePath));
 
     const allFiles = fastGlob.sync(includes);
     const entryModules = [];
     const usedModules = [];
 
     entries.forEach(entry => {
-        const entryPath = resolve(entry);
+        const entryPath = resolve(cwd, entry);
         entryModules.push(entryPath);
         traverseModule(entryPath, (modulePath) => {
             usedModules.push(modulePath);

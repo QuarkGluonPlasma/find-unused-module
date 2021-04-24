@@ -12,10 +12,11 @@ use findUnusedModule api:
 
 ```javascript
 const chalk = require('chalk');
-const findUnusedModule = require('./index');
+const findUnusedModule = require('../src/index');
+const { resolve } = require('path');
 
 const { all, used, unused } = findUnusedModule({
-    entries: ['./demo-project/fre.js', './demo-project/suzhe2.js'],
+    entries: [resolve(process.cwd(), './demo-project/fre.js'), resolve(process.cwd(), './demo-project/suzhe2.js')],
     includes: ['./demo-project/**/*']
 });
 
@@ -23,6 +24,7 @@ console.log(chalk.blue('used modules:'));
 console.log(used);
 console.log(chalk.yellow('unused modules:'));
 console.log(unused);
+
 ```
 
 output:

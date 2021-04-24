@@ -1,7 +1,9 @@
 const chalk = require('chalk');
 const findUnusedModule = require('../src/index');
+const { resolve } = require('path');
 
 const { all, used, unused } = findUnusedModule({
+    cwd: process.cwd(),
     entries: ['./demo-project/fre.js', './demo-project/suzhe2.js'],
     includes: ['./demo-project/**/*']
 });
