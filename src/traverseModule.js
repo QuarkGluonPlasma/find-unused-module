@@ -137,8 +137,17 @@ function traverseCssModule(curModulePath, callback) {
         }
         callback && callback(subModulePath);
         traverseModule(subModulePath, callback);
-    })
-
+    });
+    ast.walkDecls(decl => {
+        if (decl.value.includes('url(')) {
+            const url = /.*url\((.+)\).*/.exec(decl.value)[1].replace(/['"]/g, '');
+            const subModulePath = moduleResolver(curModulePath, url);
+            if (!subModulePath) {
+                return;
+            }
+            callback && callback(subModulePath);
+        }
+    } )
 }
 
 function traverseJsModule(curModulePath, callback) {
