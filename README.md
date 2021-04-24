@@ -1,12 +1,14 @@
 scan unused module under xxx dir, support js、ts、jsx、tsx、css、less、scss module.
 
 ## Usage
+
+quick test:
+
 ```
 yarn
 
 yarn test
 ```
-## Demo
 
 use findUnusedModule api:
 
@@ -16,7 +18,8 @@ const findUnusedModule = require('../src/index');
 const { resolve } = require('path');
 
 const { all, used, unused } = findUnusedModule({
-    entries: [resolve(process.cwd(), './demo-project/fre.js'), resolve(process.cwd(), './demo-project/suzhe2.js')],
+    cwd: process.cwd(),
+    entries: ['./demo-project/fre.js', './demo-project/suzhe2.js'],
     includes: ['./demo-project/**/*']
 });
 
@@ -57,6 +60,13 @@ used modules:
 unused modules:
 [ './demo-project/suzhe.js' ]
 ```
+## Options
+
+| option | description | default | demo |
+| :-----| ----: | :----: | :----: |
+| cwd | project directory | '' | process.cwd() |
+| entries | entry files | [] | [ './src/index.js' ] |
+| includes | all files | ['\*\*/\*', '!node_modules'] | [ './src/\*\*/*' ] |
 
 ## License
 
