@@ -20,6 +20,8 @@
   "homepage": "https://github.com/QuarkGluonPlasma/find-unused-module#readme",
   "dependencies": {
     "@babel/parser": "^7.13.16",
-    "@babel/traverse": "^7.13.17"
+    "@babel/traverse": "^7.13.17",
+    "chalk": "^4.1.1",
+    "fast-glob": "^3.2.5"
   }
 }

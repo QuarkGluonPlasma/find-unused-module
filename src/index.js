@@ -2,6 +2,8 @@ const parser = require('@babel/parser');
 const traverse = require('@babel/traverse').default;
 const fs = require('fs');
 const { resolve, dirname, join } = require('path');
+const fastGlob = require('fast-glob');
+const chalk = require('chalk');
 
 const EXTS = ['.js', '.jsx', '.ts', '.tsx'];
 
@@ -96,6 +98,19 @@ function getUsedModules (curModulePath, callback) {
     })
 }
 
+console.log(chalk.blue('used modules:'));
+
+const usedModules = [];
 getUsedModules(resolve('./demo-project/fre.js'), (modulePath) => {
-    console.log(modulePath);
+    usedModules.push(modulePath);
 });
+console.log(usedModules);
+
+
+
+console.log(chalk.yellow('unused modules:'));
+
+const allFiles = fastGlob.sync(['./demo-project/**/*']);
+
+const unusedModules = allFiles.filter(filePath => !usedModules.includes(resolve(filePath)));
+console.log(unusedModules);
