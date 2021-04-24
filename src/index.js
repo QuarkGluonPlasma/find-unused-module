@@ -1,11 +1,20 @@
 const parser = require('@babel/parser');
 const traverse = require('@babel/traverse').default;
 const fs = require('fs');
-const { resolve, dirname, join } = require('path');
+const { resolve, dirname, join, extname } = require('path');
 const fastGlob = require('fast-glob');
 const chalk = require('chalk');
+const postcss = require('postcss');
+const postcssLess = require('postcss-less');
+const postcssScss = require('postcss-scss');
 
-const EXTS = ['.js', '.jsx', '.ts', '.tsx'];
+const JS_EXTS = ['.js', '.jsx', '.ts', '.tsx'];
+const CSS_EXTS = ['.css', '.less', '.scss'];
+
+const MODULE_TYPES = {
+    JS: 1 << 0,
+    CSS: 1 << 1
+};
 
 const aliasMap = {
     'a': './lib/ssh.js'
@@ -32,10 +41,13 @@ function moduleResolver (curModulePath, requirePath) {
 }
 
 function completeModulePath (modulePath) {
+    if (getModuleType(modulePath) & MODULE_TYPES.CSS) {
+        return modulePath;
+    }
 
     function tryCompletePath (resolvePath) {
-        for (let i = 0; i < EXTS.length; i ++) {
-            let tryPath = resolvePath(EXTS[i]);
+        for (let i = 0; i < JS_EXTS.length; i ++) {
+            let tryPath = resolvePath(JS_EXTS[i]);
             if (fs.existsSync(tryPath)) {
                 return tryPath;
             }
@@ -43,7 +55,7 @@ function completeModulePath (modulePath) {
     }
 
     function reportModuleNotFoundError (modulePath) {
-        throw new Error('没找到模块 ' + modulePath);
+        throw chalk.red('没找到模块 ' + modulePath);
     }
 
     if (isDirectory(modulePath)) {
@@ -53,7 +65,7 @@ function completeModulePath (modulePath) {
         } else {
             return tryModulePath;
         }
-    } else if (!EXTS.some(ext => modulePath.endsWith(ext))) {
+    } else if (!JS_EXTS.some(ext => modulePath.endsWith(ext))) {
         const tryModulePath = tryCompletePath((ext) => modulePath + ext);
         if (!tryModulePath) {
             reportModuleNotFoundError(modulePath);
@@ -64,7 +76,7 @@ function completeModulePath (modulePath) {
     return modulePath;
 }
 
-function resolveSyntaxtPlugins(modulePath) {
+function resolveBabelSyntaxtPlugins(modulePath) {
     const plugins = [];
     if (['.tsx', '.jsx'].some(ext => modulePath.endsWith(ext))) {
         plugins.push('jsx');
@@ -75,16 +87,64 @@ function resolveSyntaxtPlugins(modulePath) {
     return plugins;
 }
 
-function getUsedModules (curModulePath, callback) {
-    curModulePath = completeModulePath(curModulePath);
 
-    const moduleFile = fs.readFileSync(curModulePath, {
+function resolveBabelSyntaxtPlugins(modulePath) {
+    const plugins = [];
+    if (['.tsx', '.jsx'].some(ext => modulePath.endsWith(ext))) {
+        plugins.push('jsx');
+    }
+    if (['.ts', '.tsx'].some(ext => modulePath.endsWith(ext))) {
+        plugins.push('typescript');
+    }
+    return plugins;
+}
+
+
+function resolvePostcssSyntaxtPlugin(modulePath) {
+    if (modulePath.endsWith('.scss')) {
+        return postcssScss;
+    }
+    if (modulePath.endsWith('.less')) {
+        return postcssLess;
+    }
+}
+
+function getModuleType(modulePath) {
+    const moduleExt = extname(modulePath);
+     if (JS_EXTS.some(ext => ext === moduleExt)) {
+         return MODULE_TYPES.JS;
+     } else if (CSS_EXTS.some(ext => ext === moduleExt)) {
+         return MODULE_TYPES.CSS;
+     }
+}
+
+function traverseCssModule(curModulePath, callback) {
+    const moduleFileConent = fs.readFileSync(curModulePath, {
         encoding: 'utf-8'
     });
 
-    const ast = parser.parse(moduleFile, {
+    const ast = postcss.parse(moduleFileConent, {
+        syntaxt: resolvePostcssSyntaxtPlugin(curModulePath)
+    });
+    ast.walkAtRules('import', rule => {
+        const subModulePath = moduleResolver(curModulePath, rule.params.replace(/['"]/g, ''));
+        if (!subModulePath) {
+            return;
+        }
+        callback && callback(subModulePath);
+        traverseModule(subModulePath, callback);
+    })
+
+}
+
+function traverseJsModule(curModulePath, callback) {
+    const moduleFileContent = fs.readFileSync(curModulePath, {
+        encoding: 'utf-8'
+    });
+
+    const ast = parser.parse(moduleFileContent, {
         sourceType: 'unambiguous',
-        plugins: resolveSyntaxtPlugins(curModulePath)
+        plugins: resolveBabelSyntaxtPlugins(curModulePath)
     });
 
     traverse(ast, {
@@ -94,15 +154,29 @@ function getUsedModules (curModulePath, callback) {
                 return;
             }
             callback && callback(subModulePath);
-            getUsedModules(subModulePath, callback);
+            traverseModule(subModulePath, callback);
         }
     })
+}
+
+function traverseModule (curModulePath, callback) {
+    curModulePath = completeModulePath(curModulePath);
+
+    const moduleType = getModuleType(curModulePath);
+
+    if (moduleType & MODULE_TYPES.JS) {
+        traverseJsModule(curModulePath, callback);
+    } else if (moduleType & MODULE_TYPES.CSS) {
+        traverseCssModule(curModulePath, callback);
+    } else {
+        throw chalk.red('不支持解析的模块类型: ' + curModulePath);
+    }    
 }
 
 console.log(chalk.blue('used modules:'));
 
 const usedModules = [];
-getUsedModules(resolve('./demo-project/fre.js'), (modulePath) => {
+traverseModule(resolve('./demo-project/fre.js'), (modulePath) => {
     usedModules.push(modulePath);
 });
 console.log(usedModules);

@@ -1,0 +1,10 @@
+@import "./styles/common3.scss";
+
+
+.bam {
+    @include background(
+      image-url("foo.png"),
+      linear-gradient(top left, #333, #0c0),
+      radial-gradient(#c00, #fff 100px)
+    );
+  }
