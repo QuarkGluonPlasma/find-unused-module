@@ -1,3 +1,4 @@
+import b from 'b';
 export class Vnode {
   constructor(type, props, children) {
     props = props || {}

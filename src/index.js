@@ -1,12 +1,12 @@
-const { resolve } = require('path');
+const { resolve, normalize } = require('path');
 const fastGlob = require('fast-glob');
-const { traverseModule, setAliasMap } = require('./traverseModule');
+const { traverseModule, setRequirePathResolver } = require('./traverseModule');
 
 const defaultOptions = {
     cwd: '',
     entries: [],
     includes: ['**/*', '!node_modules'],
-    aliasMap: {}
+    resolveRequirePath: () => {}
 }
 
 function findUnusedModule (options) {
@@ -14,16 +14,16 @@ function findUnusedModule (options) {
         cwd,
         entries,
         includes,
-        aliasMap
+        resolveRequirePath
     } = Object.assign(defaultOptions, options);
 
     includes = includes.map(includePath => (cwd ? `${cwd}/${includePath}` : includePath));
 
-    const allFiles = fastGlob.sync(includes);
+    const allFiles = fastGlob.sync(includes).map(item => normalize(item));
     const entryModules = [];
     const usedModules = [];
 
-    setAliasMap(aliasMap);
+    setRequirePathResolver(resolveRequirePath);
     entries.forEach(entry => {
         const entryPath = resolve(cwd, entry);
         entryModules.push(entryPath);

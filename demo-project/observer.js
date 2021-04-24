@@ -1,5 +1,4 @@
 import {Dep} from "./dep.js"
-import a from 'a';
 
 export class Observer {
   constructor(state) {

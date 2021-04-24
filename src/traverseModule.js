@@ -11,7 +11,7 @@ const JS_EXTS = ['.js', '.jsx', '.ts', '.tsx'];
 const CSS_EXTS = ['.css', '.less', '.scss'];
 const JSON_EXTS = ['.json'];
 
-let aliasMap = {};
+let requirePathResolver = () => {};
 
 const MODULE_TYPES = {
     JS: 1 << 0,
@@ -26,17 +26,31 @@ function isDirectory(filePath) {
     return false;
 }
 
+const visitedModules = new Set();
+
 function moduleResolver (curModulePath, requirePath) {
-    if (aliasMap[requirePath]) {
-        requirePath = aliasMap[requirePath];
+    if (typeof requirePathResolver === 'function') {
+        const res = requirePathResolver(dirname(curModulePath), requirePath);
+        if (typeof res === 'string') {
+            requirePath = res;
+        }
     }
+
+    requirePath = resolve(dirname(curModulePath), requirePath);
+
     // 过滤掉第三方模块
-    if (!requirePath.startsWith('.')) {
+    if (requirePath.includes('node_modules')) {
         return '';
     }
 
-    curModulePath = resolve(dirname(curModulePath), requirePath);
-    return completeModulePath(curModulePath);
+    requirePath =  completeModulePath(requirePath);
+
+    if (visitedModules.has(requirePath)) {
+        return '';
+    } else {
+        visitedModules.add(requirePath);
+    }
+    return requirePath;
 }
 
 function completeModulePath (modulePath) {
@@ -193,6 +207,6 @@ function traverseModule (curModulePath, callback) {
 }
 
 module.exports.traverseModule = traverseModule;
-module.exports.setAliasMap = (map) => {
-    aliasMap = Object.assign(aliasMap, map);
+module.exports.setRequirePathResolver = (resolver) => {
+    requirePathResolver = resolver;
 };

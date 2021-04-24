@@ -1,12 +1,10 @@
-Scan unused module under a directory.
+Scan unused module under a directory, support many module require method and custom module path resolver.
 
-Support module require:
+supported module require:
 - [x] es module import
 - [x] commonjs require 
 - [x] css、less、scss @import
 - [x] css、less、scss url()
-
-Support alias map.
 
 ## Usage
 
@@ -23,22 +21,24 @@ use findUnusedModule api:
 ```javascript
 const chalk = require('chalk');
 const findUnusedModule = require('../src/index');
+const path = require('path');
 
 const { all, used, unused } = findUnusedModule({
     cwd: process.cwd(),
     entries: ['./demo-project/fre.js', './demo-project/suzhe2.js'],
     includes: ['./demo-project/**/*'],
-    aliasMap: {
-        'a': './lib/ssh.js'
-    }    
+    resolveRequirePath (curDir, requirePath) {
+        if (requirePath === 'b') {
+            return path.resolve(curDir, './lib/ssh.js');
+        }
+        return requirePath;
+    }
 });
 
 console.log(chalk.blue('used modules:'));
 console.log(used);
 console.log(chalk.yellow('unused modules:'));
 console.log(unused);
-
-
 ```
 
 output:
@@ -82,6 +82,8 @@ unused modules:
 | cwd | project directory | '' | process.cwd() |
 | entries | entry files | [] | [ './src/index.js' ] |
 | includes | all files | ['\*\*/\*', '!node_modules'] | [ './src/\*\*/*' ] |
+| resolveRequirePath | custom module path resolver | () => {} | (curDir, requirePath) => {} |
+
 
 ## License
 
