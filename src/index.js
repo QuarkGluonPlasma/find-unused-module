@@ -55,7 +55,7 @@ function completeModulePath (modulePath) {
     }
 
     function reportModuleNotFoundError (modulePath) {
-        throw chalk.red('没找到模块 ' + modulePath);
+        throw chalk.red('module not found: ' + modulePath);
     }
 
     if (isDirectory(modulePath)) {
@@ -169,7 +169,7 @@ function traverseModule (curModulePath, callback) {
     } else if (moduleType & MODULE_TYPES.CSS) {
         traverseCssModule(curModulePath, callback);
     } else {
-        throw chalk.red('不支持解析的模块类型: ' + curModulePath);
+        throw chalk.red(`unsupport module type:  ${curModulePath}, only support js and css module`);
     }    
 }
 
