@@ -3,6 +3,8 @@ const traverse = require('@babel/traverse').default;
 const fs = require('fs');
 const { resolve, dirname, join } = require('path');
 
+const EXTS = ['.js', '.jsx', '.ts', '.tsx'];
+
 const aliasMap = {
     'a': './lib/ssh.js'
 }
@@ -26,12 +28,52 @@ function moduleResolver (curModulePath, requirePath) {
     return resolve(dirname(curModulePath), requirePath);
 }
 
-function getUsedModules (curModulePath, callback) {
-    if (isDirectory(curModulePath)) {
-        curModulePath = join(curModulePath, 'index.js');
-    } else if (!curModulePath.endsWith('.js')) {
-        curModulePath += join(curModulePath, '.js');
+function completeModulePath (modulePath) {
+
+    function tryCompletePath (resolvePath) {
+        for (let i = 0; i < EXTS.length; i ++) {
+            let tryPath = resolvePath(EXTS[i]);
+            if (fs.existsSync(tryPath)) {
+                return tryPath;
+            }
+        }
     }
+
+    function reportModuleNotFoundError (modulePath) {
+        throw new Error('没找到模块 ' + modulePath);
+    }
+
+    if (isDirectory(modulePath)) {
+        const tryModulePath = tryCompletePath((ext) => join(modulePath, 'index' + ext));
+        if (!tryModulePath) {
+            reportModuleNotFoundError(modulePath);
+        } else {
+            return tryModulePath;
+        }
+    } else if (!EXTS.some(ext => modulePath.endsWith(ext))) {
+        const tryModulePath = tryCompletePath((ext) => modulePath + ext);
+        if (!tryModulePath) {
+            reportModuleNotFoundError(modulePath);
+        } else {
+            return tryModulePath;
+        }
+    }
+    return modulePath;
+}
+
+function resolveSyntaxtPlugins(modulePath) {
+    const plugins = [];
+    if (['.tsx', '.jsx'].some(ext => modulePath.endsWith(ext))) {
+        plugins.push('jsx');
+    }
+    if (['.ts', '.tsx'].some(ext => modulePath.endsWith(ext))) {
+        plugins.push('typescript');
+    }
+    return plugins;
+}
+
+function getUsedModules (curModulePath, callback) {
+    curModulePath = completeModulePath(curModulePath);
 
     const moduleFile = fs.readFileSync(curModulePath, {
         encoding: 'utf-8'
@@ -39,7 +81,7 @@ function getUsedModules (curModulePath, callback) {
 
     const ast = parser.parse(moduleFile, {
         sourceType: 'unambiguous',
-        plugins: ['jsx'] // typescript
+        plugins: resolveSyntaxtPlugins(curModulePath)
     });
 
     traverse(ast, {
