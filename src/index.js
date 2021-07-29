@@ -17,7 +17,7 @@ function findUnusedModule (options) {
         resolveRequirePath
     } = Object.assign(defaultOptions, options);
 
-    includes = includes.map(includePath => (cwd ? `${cwd}/${includePath}` : includePath));
+    includes = includes.map(includePath => (cwd ? `${cwd.replace(/\\/g, '/')}/${includePath}` : includePath));
 
     const allFiles = fastGlob.sync(includes).map(item => normalize(item));
     const entryModules = [];
